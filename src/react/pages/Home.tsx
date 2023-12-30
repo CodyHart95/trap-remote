@@ -3,8 +3,6 @@ import Messages from "../../ipc/Messages";
 import PageHeader from "../components/PageHeader";
 import { List, ListItem, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useSubscribe } from "../../utility/eventBus";
-import EventBusMessages from "../../utility/EventBusMessages";
 
 const classes = {
     courseList: {
