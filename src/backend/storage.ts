@@ -49,7 +49,7 @@ const addStation = async (station: Station) => {
 
     data.courses[station.course].push(station);
 
-    saveData();
+    await saveData();
 };
 
 const updateStation = async (station: Station) => {
@@ -58,6 +58,7 @@ const updateStation = async (station: Station) => {
     }
 
     data.courses[station.course][station.number] = station;
+    await saveData();
 }
 
 const saveCourse = async (course: Course) => {
@@ -72,7 +73,7 @@ const deleteCourse = async (courseName: string) => {
     await saveData();
 }
 
-const loadCourses = async () => {
+const loadCourses = () => {
     if(data.courses) {
         return Object.keys(data.courses);
     }
@@ -80,4 +81,4 @@ const loadCourses = async () => {
     return []
 }
 
-const loadCourseStations = async (courseName: string) => data.courses[courseName] || [];
+const loadCourseStations = (courseName: string) => data.courses[courseName] || [];

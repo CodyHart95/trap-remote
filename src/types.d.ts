@@ -16,7 +16,8 @@ interface Course {
     stations: Station[];
 }
 
-type useModal<T> = [
-    React.FC<T>,
-    Function<void>
-]
+interface IdModalProps {
+    id: string;
+}
+
+type AnyCallback = (...params: any[]) => void;

@@ -22,21 +22,6 @@ const Home = () => {
     const [courses, setCourses] = useState<string[]>([]);
     const navigate = useNavigate();
 
-    useSubscribe(EventBusMessages.CourseUpdated, async (course: string) => {
-        setCourses(courses => {
-            const existingIndex = courses.findIndex((c) => c === course);
-
-            if(existingIndex > -1) {
-                courses[existingIndex] = course;
-            }
-            else {
-                courses.push(course);
-            }
-
-            return [...courses];
-        })
-    })
-
     useEffect(() => {
         interop.invoke(Messages.LoadCourses, null).then((courses: string[]) => {
             setCourses(courses);
@@ -61,6 +46,10 @@ const Home = () => {
         }
     }
 
+    const onStart = (courseName: string) => {
+        navigate(`/start/${courseName}`);
+    };
+
     return (
         <>
             <PageHeader text="Courses" headerButton={courses && "Add Course"} onClick={onAddCourse}/>
@@ -73,7 +62,7 @@ const Home = () => {
                             {course}
                         </Typography>
                         <div>
-                            <Button sx={{marginRight: "8px"}} variant="contained">Start</Button>
+                            <Button sx={{marginRight: "8px"}} variant="contained" onClick={() => onStart(course)}>Start</Button>
                             <Button onClick={() => onEditCourse(course)}>Edit</Button>
                             <Button onClick={() => onDelete(course)} color="error">Delete</Button>
                         </div>

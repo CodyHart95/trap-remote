@@ -4,7 +4,7 @@ enum Messages {
     LoadCourses="load:courses",
     LoadStations="load:stations",
     SaveCourse="save:course",
-    DeleteCourse="delete:course"
+    DeleteCourse="delete:course",
 }
 
 export default Messages;

@@ -1,28 +1,20 @@
 import { Typography } from "@mui/material";
-import useBaseModal from "./BaseModal";
+import BaseModal from "./BaseModal";
 import { useRef } from "react";
+import { useFromModal } from "./useModal";
 
-const useErrorModal = (): useModal<object> => {
-    const [ BaseModal, open ] = useBaseModal();
+const ErrorModal = ({id}: IdModalProps) => {
+    const openCallback = (errorMessage: string) => message.current = errorMessage;
+
+    useFromModal(id, openCallback);
+
     const message = useRef("");
 
-    const openErrorModal = (errorMessage: string) => {
-        message.current = errorMessage;
-        open();
-    }
-
-    const ErrorModal = () => {
-        return (
-            <BaseModal title="An Error Occured" primaryAction="Ok" maxWidth="sm">
-                <Typography>{message.current}</Typography>
-            </BaseModal>
-        )
-    }
-
-    return [
-        ErrorModal,
-        openErrorModal
-    ]
+    return (
+        <BaseModal id={id} title="An Error Occured" primaryAction="Ok" maxWidth="sm">
+            <Typography>{message.current}</Typography>
+        </BaseModal>
+    )
 };
 
-export default useErrorModal;
+export default ErrorModal;

@@ -1,34 +1,26 @@
 import { useState } from "react";
 import TextBox from "../components/TextBox";
-import useBaseModal from "./BaseModal";
-import { emit } from "../../utility/eventBus";
-import EventBusMessages from "../../utility/EventBusMessages";
+import BaseModal from "./BaseModal";
+import { useAsyncModal } from "./useModal";
 
-const useAddStationModal = (): useModal<object> => {
+const AddStationModal = ({id}: IdModalProps) => {
     const [localStation, setLocalStation] = useState<Station>({} as Station);
-    const [ BaseModal, openBaseModal ] = useBaseModal()
 
-    const onSave = async () => {
-        emit(EventBusMessages.StationUpdated, localStation);
-    };
-
-    const open = (stationNumber: number, course: string) => {
+    const openCallback = (stationNumber: number, course: string) => {
         setLocalStation({ number: stationNumber, traps: 0, course });
-        openBaseModal();
     }
 
-    const AddStationModal = () => (
-        <>
-            <BaseModal title="Add Station" secondaryAction="Cancel" primaryAction="Save" onPrimaryAction={onSave}>
-                <TextBox label="Number of Traps" type="number" value={localStation.traps} onChange={(e) => setLocalStation(l => ({...l, traps: Number(e.target.value)}))}/>
-            </BaseModal>
-        </>
-    )
+    const { resolve } = useAsyncModal(id, openCallback);
 
-    return [
-        AddStationModal,
-        open
-    ]
+    const onSave = () => {
+        resolve(localStation);
+    };
+
+    return (
+        <BaseModal id={id} title="Add Station" secondaryAction="Cancel" primaryAction="Save" onPrimaryAction={onSave}>
+            <TextBox label="Number of Traps" type="number" value={localStation.traps} onChange={(e) => setLocalStation(l => ({...l, traps: Number(e.target.value)}))}/>
+        </BaseModal>
+    )
 };
 
-export default useAddStationModal;
+export default AddStationModal;
