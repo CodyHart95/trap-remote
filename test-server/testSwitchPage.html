@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Switch Indicators</title>
+    <style>
+        .switch-indicator {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<div id="switchContainer"></div>
+
+<script>
+    // Function to make GET request
+    function fetchData(url) {
+        return fetch(url)
+            .then(response => response.json())
+            .catch(error => console.error('Error:', error));
+    }
+
+    function parseSwitches(status) {
+        return Object.keys(status).filter(k => k.startsWith("switch")).map(k => status[k]);
+    }
+
+    // Function to update switch indicators
+    function updateSwitchIndicators(switches) {
+        const switchContainer = document.getElementById('switchContainer');
+
+        switches.forEach(switchInfo => {
+            let switchIndicator = document.getElementById(switchInfo.id);
+            let needsAppend = false;
+
+            if(!switchIndicator) {
+                switchIndicator = document.createElement('div');
+                switchIndicator.id = switchInfo.id;
+                needsAppend = true;
+            }
+
+            switchIndicator.className = 'switch-indicator';
+
+            // Fetch switch status
+            fetchData(`/rpc/Switch.GetStatus?id=${switchInfo.id}`)
+                .then(response => {
+                    switchIndicator.style.backgroundColor = response.output ? 'green' : 'red';
+                });
+
+            needsAppend && switchContainer.appendChild(switchIndicator);
+        });
+
+        return switches;
+    }
+
+    function getStatus() {
+        // Fetch switches from /rpc/Shell.GetStatus
+        fetchData('/rpc/Shelly.GetStatus')
+        .then(status => {
+            const switches = parseSwitches(status);
+            console.log(switches);
+            return updateSwitchIndicators(switches)
+        })
+    }
+
+    getStatus();
+</script>
+
+<button onClick="getStatus()">Refresh State</button>
+</body>
+</html>

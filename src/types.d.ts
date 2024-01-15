@@ -9,6 +9,7 @@ interface Station {
     number: number;
     traps: number;
     course: string;
+    trapIpAddresses: string[];
 }
 
 interface Course {

@@ -5,6 +5,12 @@ enum Messages {
     LoadStations="load:stations",
     SaveCourse="save:course",
     DeleteCourse="delete:course",
+    AddShellys="add:shellys",
+    ClearShellys="remove:shelly",
+    FireTrap="fire:trap",
+    TrapConnected="trap:connected",
+    TrapDisconnected="trap:disconnected",
+    TrapStatus="trap:status"
 }
 
 export default Messages;

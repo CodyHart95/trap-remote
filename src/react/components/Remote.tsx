@@ -1,12 +1,18 @@
-import {useMemo, useRef} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import { Box, Button, Grid, Paper } from "@mui/material";
+import Messages from "../../ipc/Messages";
+import { ipcMain } from "electron";
 
 interface RemoteProps {
     station: Station
 }
 
 interface LayoutProps {
-    numberOfTraps: number
+    trapIpAddresses: string[]
+}
+
+interface Indecator {
+    [ipAddress: string]: boolean
 }
 
 const classes = {
@@ -25,75 +31,80 @@ const classes = {
         alignItems: "center",
         justifyContent: "center",
         display: "flex"
-    }
+    },
+    indecator: (on: boolean) => ({
+        width: "15px",
+        height: "15px",
+        borderRadius: "50%",
+        margin: "10px",
+        display: "inline-block",
+        backgroundColor: on ? "green" : "red"
+    })
 }
 
-const pullTrap = (trapNumbers: number[]) => {
-    console.log(`Trap ${trapNumbers} Pulled`);
+const pullTrap = async (ipAddresses: string[]) => {
+    const pulls = ipAddresses.map((ipAddress) => {
+        interop.invoke(Messages.FireTrap, ipAddress)
+    });
+
+    await Promise.allSettled(pulls);
 };
 
-const SinglesLayout = () => {
+const SinglesLayout = ({ trapIpAddresses }: LayoutProps) => {
     return (
         <Box sx={classes.singlesLayoutContainer}>
-            <Button variant="contained" onClick={() => pullTrap([0])}>Pull</Button>
+            <Button variant="contained" onClick={() => pullTrap(trapIpAddresses)}>Pull</Button>
         </Box>
     )
 }
 
-const DoublesLayout = () => {
+const DoublesLayout = ({ trapIpAddresses }: LayoutProps) => {
     return (
         <Grid container sx={classes.multiContainer}>
             <Grid item xs={6} sx={classes.multiItem}>
-                <Button variant="contained" onClick={() => pullTrap([0])}>Trap A</Button>
+                <Button variant="contained" onClick={() => pullTrap([trapIpAddresses[0]])}>Trap A</Button>
             </Grid>
             <Grid item xs={6} sx={classes.multiItem}>
-                <Button variant="contained" onClick={() => pullTrap([1])}>Trap B</Button>
+                <Button variant="contained" onClick={() => pullTrap([trapIpAddresses[1]])}>Trap B</Button>
             </Grid>
             <Grid item xs={12} sx={classes.multiItem}>
-                <Button variant="contained" onClick={() => pullTrap([0,1])}>True Pair</Button>
+                <Button variant="contained" onClick={() => pullTrap(trapIpAddresses)}>True Pair</Button>
             </Grid>
         </Grid>
     )
 }
 
-const NLayout = ({numberOfTraps}: LayoutProps) => {
-    const doubleADown = useRef(-1);
+const NLayout = ({ trapIpAddresses }: LayoutProps) => {
+    const doubleADown = useRef("");
 
-    const onMouseDown = (trapNumber: number) => {
-        console.log(doubleADown.current);
-        if(doubleADown.current > -1) {
-            pullTrap([doubleADown.current, trapNumber]);
+    const onMouseDown = (ipAddress: string) => {
+        if(doubleADown.current) {
+            pullTrap([doubleADown.current, ipAddress]);
             return;
         }
 
-        if(doubleADown.current === -1) {
-            doubleADown.current = trapNumber;
+        if(doubleADown.current) {
+            doubleADown.current = ipAddress;
         }
     }
 
-    const onMouseUp = (trapNumber: number) => {
-        if(doubleADown.current === trapNumber) {
-            pullTrap([trapNumber]);
+    const onMouseUp = (ipAddress: string) => {
+        if(doubleADown.current === ipAddress) {
+            pullTrap([ipAddress]);
         }
 
-        doubleADown.current = -1;
+        doubleADown.current = ipAddress;
     }
 
     const gridItems = useMemo(() => {
-        const items = []
-
-        for(let i = 0; i < numberOfTraps; i++) {
-            items.push(
-                <Grid item xs={6} sx={classes.multiItem}>
-                    <Button variant="contained" onMouseDown={() => onMouseDown(i)} onMouseUp={() => onMouseUp(i)}>
-                        {`Trap ${i < 27 ? String.fromCharCode(i + 65).toUpperCase() : i + 1}`}
-                    </Button>
-                </Grid>
-            )
-        }
-
-        return items;
-    }, [numberOfTraps]);
+        return trapIpAddresses.map((ip, i) => (
+            <Grid item xs={6} sx={classes.multiItem}>
+                <Button variant="contained" onMouseDown={() => onMouseDown(ip)} onMouseUp={() => onMouseUp(ip)}>
+                {`Trap ${i < 27 ? String.fromCharCode(i + 65).toUpperCase() : i + 1}`}
+                </Button>
+            </Grid>
+        ));
+    }, [trapIpAddresses]);
 
 
     return (
@@ -103,21 +114,56 @@ const NLayout = ({numberOfTraps}: LayoutProps) => {
     )
 }
 
-const ButtonLayout = ({numberOfTraps}: LayoutProps) => {
-    if(numberOfTraps === 1) {
-        return <SinglesLayout/>
+const ButtonLayout = ({trapIpAddresses}: LayoutProps) => {
+    if(trapIpAddresses.length === 1) {
+        return <SinglesLayout trapIpAddresses={trapIpAddresses}/>
     }
-    else if(numberOfTraps == 2) {
-        return <DoublesLayout/>
+    else if(trapIpAddresses.length == 2) {
+        return <DoublesLayout trapIpAddresses={trapIpAddresses}/>
     }
 
-    return <NLayout numberOfTraps={numberOfTraps}/>
+    return <NLayout trapIpAddresses={trapIpAddresses}/>
 }
+
+const Indecator = ({ trapIpAddresses }: LayoutProps) => {
+    const [indecators, setIndecators] = useState<Indecator>({});
+
+    useEffect(() => {
+
+        const statusPromises = trapIpAddresses.map((ipAddress) => interop.invoke(Messages.TrapStatus, ipAddress));
+
+        Promise.all(statusPromises).then((statuses) => {
+            console.log(statuses);
+            statuses.forEach(s => indecators[s.ipAddress] = s.status);
+        });
+
+        setIndecators({...indecators});
+    }, [trapIpAddresses]);
+
+    useEffect(() => {
+        interop.receive(Messages.TrapConnected, (ipAddress) => {
+            setIndecators(i => ({ ...i, [ipAddress]: true }));
+        });
+
+        interop.receive(Messages.TrapDisconnected, (ipAddress) => {
+            setIndecators(i => ({ ...i, [ipAddress]: false }));
+        });
+    })
+
+    return (
+        <Box width="100%" display="flex" alignItems="center" justifyContent="end">
+            {
+                Object.values(indecators).map(i => <Box sx={ () => classes.indecator(i) }/>)
+            }
+        </Box>
+    )
+};
 
 const Remote = ({ station }: RemoteProps) => {
     return (
         <Box component={Paper} width="100%" height="100%" alignItems="center">
-                <ButtonLayout numberOfTraps={station.traps}/>
+            <Indecator trapIpAddresses={station.trapIpAddresses}/>
+            <ButtonLayout trapIpAddresses={station.trapIpAddresses}/>
         </Box>
     )
 };

@@ -50,7 +50,9 @@ const RunCourse = () => {
             setCourse({
                 name: courseName,
                 stations
-            })
+            });
+
+            interop.invoke(Messages.AddShellys, stations.flatMap(s => s.trapIpAddresses));
         });
     }, [courseName]);
 
