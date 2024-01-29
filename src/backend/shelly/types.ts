@@ -15,3 +15,13 @@ export interface ShellySwitch {
         tC: number
     }
 }
+
+export interface ShellyScriptUpdateConfig {
+    id: number;
+    name: string;
+    enable: boolean;
+}
+
+export interface ShellyScriptConfig extends ShellyScriptUpdateConfig {
+    running: boolean;
+}

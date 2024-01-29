@@ -1,1 +1,1 @@
-{"courses":{"Singles":[{"number":0,"traps":1,"course":"Singles","trapIpAddresses":["http://localhost:5000"]}]}}
+{"courses":{"Singles":[{"number":0,"traps":1,"course":"Singles","trapIpAddresses":["http://192.168.10.70"]}],"Doubles":[{"number":0,"traps":2,"course":"Doubles","trapIpAddresses":["http://192.168.10.70","http://192.168.10.83"]}]}}
