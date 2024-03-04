@@ -5,6 +5,7 @@ import createRemoteTheme, {offWhite} from "./theme";
 import CreateCourse from "./pages/CreateCourse";
 import RunCourse from "./pages/RunCourse";
 import ModalProvider from "./modals/useModal";
+import EditRemote from "./pages/EditRemote";
 
 const theme = createRemoteTheme();
 
@@ -20,6 +21,8 @@ const App = () => {
                             <Route path="/addCourse" element={<CreateCourse/>}/>
                             <Route path="/addCourse/:courseName" element={<CreateCourse/>}/>
                             <Route path="/start/:courseName" element={<RunCourse/>}/>
+                            <Route path="/remote" element={<EditRemote/>}/>
+                            <Route path="/remote/:remoteId" element={<EditRemote/>}/>
                         </Routes>
                     </HashRouter>
                 </Box>

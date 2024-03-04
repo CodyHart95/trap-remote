@@ -18,15 +18,16 @@ interface BaseModalProps extends React.PropsWithChildren {
     secondaryAction?: string;
     maxWidth?: "sm" | "md" | "lg";
     onSecondaryAction?: () => void;
-    onPrimaryAction?: () => void;
+    onPrimaryAction?: () => void | boolean;
 }
 
 const BaseModal = ({ id, title, primaryAction, secondaryAction, onPrimaryAction, onSecondaryAction, maxWidth, children }: BaseModalProps) => {
     const { isOpen, closeModal } = useFromModal(id);
 
     const onPrimaryActionInternal = () => {
-        closeModal();
-        onPrimaryAction && onPrimaryAction();
+        if(onPrimaryAction && onPrimaryAction()) {
+            closeModal();
+        }
     }
 
     const onSecondaryActionInternal = () => {

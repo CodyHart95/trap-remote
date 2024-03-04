@@ -1,74 +1,43 @@
-import {useState, useEffect} from "react";
-import Messages from "../../ipc/Messages";
-import PageHeader from "../components/PageHeader";
-import { List, ListItem, Typography, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import {useState, ReactNode} from "react";
+import { Box, Tabs, Tab } from "@mui/material";
+import Courses from "./Tabs/Courses";
+import Traps from "./Tabs/Traps";
+import Remotes from "./Tabs/Remotes";
 
-const classes = {
-    courseList: {
-        overflow: "auto",
-        height: "calc(100vh - 85px)"
-    },
-    courseListItem: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-    }
+interface TabProps {
+    children: ReactNode;
+    tab: number;
+    currentTab: number;
 }
 
+const TabPannel = ({ children, tab, currentTab }: TabProps) => (
+    <div hidden={tab !== currentTab}>
+        {children}
+    </div>
+)
+
 const Home = () => {
-    const [courses, setCourses] = useState<string[]>([]);
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        interop.invoke(Messages.LoadCourses, null).then((courses: string[]) => {
-            setCourses(courses);
-        });
-    }, []);
-
-    const onAddCourse = () => {
-        navigate("/addCourse");
-    };
-
-    const onEditCourse = (courseName: string) => {
-        navigate(`/addCourse/${courseName}`);
-    }
-
-    const onDelete = (courseName: string) => {
-        interop.invoke(Messages.DeleteCourse, courseName);
-        const index = courses.findIndex(c => c === courseName);
-
-        if(index > -1) {
-            courses.splice(index, 1);
-            setCourses([...courses]);
-        }
-    }
-
-    const onStart = (courseName: string) => {
-        navigate(`/start/${courseName}`);
-    };
+    const [value, setValue] = useState(0);
 
     return (
-        <>
-            <PageHeader text="Courses" headerButton={courses && "Add Course"} onClick={onAddCourse}/>
-            {!courses && <Button variant="contained" onClick={onAddCourse}>Add Course</Button>}
-            {courses && (
-                <List sx={classes.courseList}>
-                {courses.map(course => (
-                    <ListItem key={course} sx={classes.courseListItem}>
-                        <Typography>
-                            {course}
-                        </Typography>
-                        <div>
-                            <Button sx={{marginRight: "8px"}} variant="contained" onClick={() => onStart(course)}>Start</Button>
-                            <Button onClick={() => onEditCourse(course)}>Edit</Button>
-                            <Button onClick={() => onDelete(course)} color="error">Delete</Button>
-                        </div>
-                    </ListItem>
-                ))}
-            </List>
-            )}
-        </>
+        <Box sx={{ width: '100%' }}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs value={value} onChange={(_, newValue) => setValue(newValue)} aria-label="basic tabs example">
+                <Tab label="Courses"/>
+                <Tab label="Traps"/>
+                <Tab label="Remotes"/>
+                </Tabs>
+            </Box>
+            <TabPannel currentTab={value} tab={0}>
+                <Courses/>
+            </TabPannel>
+            <TabPannel currentTab={value} tab={1}>
+                <Traps/>
+            </TabPannel>
+            <TabPannel currentTab={value} tab={2}>
+                <Remotes/>
+            </TabPannel>
+        </Box>
     )
 };
 

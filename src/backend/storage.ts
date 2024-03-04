@@ -1,13 +1,16 @@
 import path from "path";
 import { existsSync} from "fs";
 import fs from "fs/promises";
-import { app, ipcMain } from "electron"
+import { app } from "electron"
 import Messages from "../ipc/Messages"
+import { handle } from "./ipc";
 
 interface DataStorage {
     courses: {
         [course: string]: Station[]
-    }
+    };
+    traps: Trap[];
+    remotes: Remote[];
 }
 
 const storagePath = path.join(app.getAppPath(), "storage.json");
@@ -17,12 +20,19 @@ let data: DataStorage = {
 } as DataStorage;
 
 export const initialize = () => {
-    ipcMain.handle(Messages.AddStation, (_, station: Station) => addStation(station));
-    ipcMain.handle(Messages.UpdateStation, (_, station: Station) => updateStation(station));
-    ipcMain.handle(Messages.SaveCourse, (_, course) => saveCourse(course));
-    ipcMain.handle(Messages.LoadCourses, () => loadCourses());
-    ipcMain.handle(Messages.DeleteCourse, (_, courseName: string) => deleteCourse(courseName));
-    ipcMain.handle(Messages.LoadStations, (_, courseName: string) =>  loadCourseStations(courseName));
+    handle(Messages.AddStation, addStation);
+    handle(Messages.UpdateStation, updateStation);
+    handle(Messages.SaveCourse, saveCourse);
+    handle(Messages.LoadCourses, loadCourses);
+    handle(Messages.DeleteCourse, deleteCourse);
+    handle(Messages.LoadStations, loadCourseStations);
+    handle(Messages.LoadTraps, loadTraps);
+    handle(Messages.SaveTrap, saveTrap);
+    handle(Messages.DeleteTrap, deleteTrap);
+    handle(Messages.LoadRemotes, loadRemotes);
+    handle(Messages.GetRemote, getRemote);
+    handle(Messages.SaveRemote, saveRemote);
+    handle(Messages.DeleteRemote, deleteRemote);
 
     loadData();
 };
@@ -38,7 +48,7 @@ const loadData = async () => {
 }
 
 const saveData = async () => {
-    const dataString = JSON.stringify(data);
+    const dataString = JSON.stringify(data, null, 2);
     await fs.writeFile(storagePath, dataString);
 }
 
@@ -82,3 +92,84 @@ const loadCourses = () => {
 }
 
 const loadCourseStations = (courseName: string) => data.courses[courseName] || [];
+
+const loadTraps = () => data.traps || [];
+
+const saveTrap = async (trap: Trap) => {
+    if(!data.traps) {
+        data.traps = [];
+    }
+
+    const trapIndex = data.traps.findIndex(d => d.name === trap.name);
+
+    if(trapIndex > -1) {
+        data.traps[trapIndex] = trap;
+    }
+    else {
+        data.traps.push(trap);
+    }
+
+    await saveData();
+
+    return data.traps;
+}
+
+const deleteTrap = async (trap: Trap) => {
+    const trapIndex = data.traps.findIndex(d => d.name === trap.name);
+
+    if(trapIndex > -1) {
+        data.traps.splice(trapIndex);
+        await saveData();
+    }
+
+    return data.traps || [];
+}
+
+const loadRemotes = () => data.remotes || [];
+
+const getRemote = (remoteId: string) => {
+    if(!data.remotes) {
+        data.remotes = [];
+    }
+
+    let remote = data.remotes.find(r => r.name === remoteId);
+
+    if(!remote) {
+        remote = {
+            name: "",
+            buttonDefinitions: []
+        }
+    }
+
+    return remote;
+}
+
+const saveRemote = async (remote: Remote) => {
+    if(!data.remotes) {
+        data.remotes = []
+    }
+
+    const remoteIndex = data.remotes.findIndex(r => r.name === remote.name);
+
+    if(remoteIndex > -1) {
+        data.remotes[remoteIndex] = remote;
+    }
+    else {
+        data.remotes.push(remote);
+    }
+
+    await saveData();
+
+    return data.remotes;
+}
+
+const deleteRemote = async (remote: Remote) => {
+    const remoteIndex = data.remotes.findIndex(r => r.name === remote.name);
+
+    if(remoteIndex > -1) {
+        data.remotes.splice(remoteIndex);
+        await saveData();
+    }
+
+    return data.remotes || [];
+}

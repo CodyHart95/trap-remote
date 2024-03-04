@@ -17,6 +17,29 @@ interface Course {
     stations: Station[];
 }
 
+interface Trap {
+    name: string;
+    ipAddress: string;
+}
+
+interface Remote {
+    name: string;
+    buttonDefinitions: ButtonDefinition[];
+}
+
+enum ButtonType {
+    Custom = 0,
+    Singles = 1,
+    Doubles = 2,
+}
+interface ButtonDefinition {
+    id: string;
+    text: string;
+    buttonType: ButtonType;
+    position: {x: number, y: number};
+    traps: trap[];
+}
+
 interface IdModalProps {
     id: string;
 }

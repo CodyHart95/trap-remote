@@ -8,6 +8,7 @@ const Label = styled(InputLabel)`
 interface TextBoxProps extends OutlinedInputProps {
     label: string;
     helpertext?: string;
+    fullwidth?: boolean;
 }
 
 const TextBox = (props: TextBoxProps) => (
