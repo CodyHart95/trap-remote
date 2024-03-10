@@ -9,11 +9,12 @@ interface TextBoxProps extends OutlinedInputProps {
     label: string;
     helpertext?: string;
     fullwidth?: boolean;
+    containerProps?: any;
 }
 
 const TextBox = (props: TextBoxProps) => (
-    <Box display="flex" flexDirection="column" alignItems="flex-start" width="100%">
-        <Label htmlFor={props.id} sx={{ fontWeight: "Bold" }}>
+    <Box {...props.containerProps}>
+        <Label htmlFor={props.id} sx={{ fontWeight: "Bold"}}>
             {props.label}
         </Label>
         <OutlinedInput {...props} size="small" fullWidth notched={false} />

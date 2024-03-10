@@ -1,8 +1,8 @@
-import { useState, useRef, useContext, createContext, PropsWithChildren } from "react";
+import { useState, useRef, useContext, createContext, PropsWithChildren, useCallback } from "react";
 
 interface ModalContext {
     openModal: (id: string, ...rest: any[]) => void;
-    openModalAsync: (id: string, ...rest: any[]) => Promise<any>
+    openModalAsync: (id: string, ...rest: any[]) => Promise<any>;
     closeModal: (id: string) => void;
     setOpenCallback: (id: string, callback: AnyCallback) => void;
     openModals: string[];
@@ -10,7 +10,7 @@ interface ModalContext {
 
 interface FromModalContext {
     openModal: () => void;
-    openModalAsync: () => Promise<any>;
+    openModalAsync: () => void | Promise<any>;
     closeModal: () => void;
     setOpenCallback: (callback: AnyCallback) => void;
     isOpen: boolean
@@ -75,32 +75,31 @@ const ModalProvider = ({children}: PropsWithChildren) => {
     const callbacks = useRef<ModalCallbackMap>({});
 
     const openModal = (id: string, ...rest: any[]) => {
-        if(!openModals.find(m => m === id)) {
+        if(!openModals.includes(id)) {
             if(callbacks.current[id]) {
                 callbacks.current[id](...rest);
             }
-            openModals.push(id);
-            setOpenModals([...openModals]);
+            setOpenModals([...openModals, id]);
         }
     }
 
-    const openModalAsync = async (id: string, ...rest: any[]) => {
-        if(!openModals.find(m => m === id)) {
-            openModals.push(id);
-            setOpenModals([...openModals]);
+    const openModalAsync = useCallback((id: string, ...rest: any[]): Promise<any> => {
+        if(!openModals.includes(id)) {
+            setOpenModals([...openModals, id]);
             if(callbacks.current[id]) {
-                return await callbacks.current[id](...rest);
+                return callbacks.current[id](...rest) as Promise<any>;
             }
         }
-    }
 
-    const closeModal = (id: string) => {
+        return Promise.resolve();
+    }, [openModals])
+
+    const closeModal = useCallback((id: string) => {
         const index = openModals.findIndex(o => o === id);
         if(index > -1) {
-            openModals.splice(index, 1);
-            setOpenModals([...openModals]);
+            setOpenModals(modals => modals.filter(modalId => modalId !== id));
         }
-    }
+    }, [openModals])
 
     const setOpenCallback = (id: string, callback: AnyCallback) => {
         callbacks.current[id] = callback;

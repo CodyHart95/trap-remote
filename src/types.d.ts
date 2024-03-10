@@ -36,7 +36,7 @@ interface ButtonDefinition {
     id: string;
     text: string;
     buttonType: ButtonType;
-    position: {x: number, y: number};
+    position: {row: number, column: number};
     traps: trap[];
 }
 
@@ -44,4 +44,4 @@ interface IdModalProps {
     id: string;
 }
 
-type AnyCallback = (...params: any[]) => void;
+type AnyCallback = (...params: any[]) => void | Promise<void>;

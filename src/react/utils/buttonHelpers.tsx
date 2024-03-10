@@ -2,8 +2,8 @@ export const calculateButtonPosition = (parent: Element, buttonDef: ButtonDefini
     const parentRect = parent.getBoundingClientRect();
 
     // Calculate the new absolute position of the button
-    const absolutePositionX = (buttonDef.position.x / 100) * parentRect.width + parentRect.left;
-    const absolutePositionY = (buttonDef.position.y / 100) * parentRect.height + parentRect.top;
+    //const absolutePositionX = (buttonDef.position.x / 100) * parentRect.width + parentRect.left;
+    //const absolutePositionY = (buttonDef.position.y / 100) * parentRect.height + parentRect.top;
 
-    return { x: absolutePositionX, y: absolutePositionY}
+    return { x: buttonDef.position.x - parentRect.x, y: buttonDef.position.y - parentRect.y}
 }

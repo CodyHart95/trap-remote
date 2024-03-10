@@ -16,12 +16,13 @@ interface BaseModalProps extends React.PropsWithChildren {
     id: string;
     primaryAction?: string;
     secondaryAction?: string;
+    height?: string;
     maxWidth?: "sm" | "md" | "lg";
     onSecondaryAction?: () => void;
-    onPrimaryAction?: () => void | boolean;
+    onPrimaryAction?: () => void | boolean | Promise<void>;
 }
 
-const BaseModal = ({ id, title, primaryAction, secondaryAction, onPrimaryAction, onSecondaryAction, maxWidth, children }: BaseModalProps) => {
+const BaseModal = ({ id, title, primaryAction, secondaryAction, onPrimaryAction, onSecondaryAction, maxWidth, height, children }: BaseModalProps) => {
     const { isOpen, closeModal } = useFromModal(id);
 
     const onPrimaryActionInternal = () => {
@@ -36,14 +37,14 @@ const BaseModal = ({ id, title, primaryAction, secondaryAction, onPrimaryAction,
     }
 
     return (
-        <Dialog open={isOpen} maxWidth={maxWidth || "md"}>
+        <Dialog open={isOpen} maxWidth={maxWidth || "md"} fullWidth >
             <Box sx={classes.dialoagTitle}>
                 <Typography>{title}</Typography>
                 <IconButton onClick={onSecondaryActionInternal} sx={{padding: 0}}>
                     <CloseIcon/>
                 </IconButton>
             </Box>
-            <DialogContent>
+            <DialogContent sx={{height}}>
                 {children}
             </DialogContent>
             <DialogActions>
