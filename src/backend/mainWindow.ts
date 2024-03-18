@@ -13,7 +13,8 @@ export const createMainWindow = () => {
       },
     });
 
-    mainWindow.removeMenu()
+    mainWindow.removeMenu();
+    mainWindow.maximize();
 
     return mainWindow;
   };

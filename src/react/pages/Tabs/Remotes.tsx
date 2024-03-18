@@ -34,6 +34,25 @@ const Home = () => {
         }
     }
 
+    const onDuplicate = (remote: Remote) => {
+        let name = remote.name;
+        const suffix = remote.name.substring(remote.name.length - 3);
+        if(/\((\d+)\)/gm.test(suffix)) {
+            name = remote.name.substring(0, remote.name.length - 4);
+        }
+        const similarNameCount = remotes.filter((r) => r.name.startsWith(name));
+        const newRemote = {...remote};
+
+        if(similarNameCount.length > 0) {
+            newRemote.name = `${name} (${similarNameCount.length})`
+        }
+
+        remotes.push(newRemote);
+        setRemotes([...remotes]);
+
+        interop.invoke(Messages.SaveRemote, newRemote);
+    }
+
     return (
         <>
             {remotes.length === 0 && <EmptyTabBody buttonText="Add Remote" onClick={onAddRemote}/>}
@@ -47,6 +66,7 @@ const Home = () => {
                         <div>
                             <Button onClick={() => onEditRemote(remote.name)}>Edit</Button>
                             <Button onClick={() => onDelete(remote)} color="error">Delete</Button>
+                            <Button onClick={() => onDuplicate(remote)}>Duplicate</Button>
                         </div>
                     </ListItem>
                 ))}

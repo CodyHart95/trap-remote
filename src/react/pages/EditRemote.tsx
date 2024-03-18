@@ -13,7 +13,6 @@ import TextBox from "../components/TextBox";
 import ErrorModal from "../modals/ErrorModal";
 import { ButtonType } from "../../enums";
 import RemoteButton, { size as remoteButtonSize } from "../components/RemoteButton";
-import { light } from "@mui/material/styles/createPalette";
 
 const modalId = "edit-remote-button-modal";
 const errorModalId = "edit-remote-error-modal";
@@ -23,11 +22,13 @@ const dragItemType = "tool-box-item";
 interface DropAreaProps {
     buttonDefinitions: ButtonDefinition[];
     setButtonDefinition: (def: ButtonDefinition) => void;
+    deleteButtonDefinition: (def: ButtonDefinition) => void;
 }
 
 interface DragItemProps {
     buttonDefinition: ButtonDefinition;
     setButtonDefinition: (def: ButtonDefinition) => void;
+    deleteButtonDefinition?: (def: ButtonDefinition) => void;
     isExisting?: boolean;
     style?: object;
 }
@@ -49,6 +50,7 @@ const classes = {
             width: "100%",
             display: "grid",
             gap: "16px",
+            gridColumn: "2 / span 2",
             gridTemplateColumns: columnStyle,
             gridTemplateRows: rowStyle,
         }
@@ -73,7 +75,8 @@ const classes = {
         background: "white", 
     },
     nameBoxContainer: {
-        gridColumn: "1 / span 2"
+        gridColumn: "1 / span 2",
+        maxWidth: "300px"
     },
     dropCell: (row: number, column: number, isOver: boolean, isDragging: boolean) => {
         let border;
@@ -122,7 +125,7 @@ const defaultCustomDef: ButtonDefinition = {
     position: { column: 0, row: 0 }
 }
 
-const DragItem = ({buttonDefinition, setButtonDefinition, style, isExisting = false}: DragItemProps) => {
+const DragItem = ({buttonDefinition, setButtonDefinition, deleteButtonDefinition, style, isExisting = false}: DragItemProps) => {
     const { openModalAsync } = useModal();
 
     const [{ isDragging }, drag] = useDrag(() => ({
@@ -137,8 +140,12 @@ const DragItem = ({buttonDefinition, setButtonDefinition, style, isExisting = fa
     const onDoubleClick = useCallback(async (event: any) => {
         if(isExisting) {
             const newValue = await openModalAsync(modalId, buttonDefinition.text, buttonDefinition.traps, buttonDefinition.buttonType);
+            if(newValue.delete) {
+                deleteButtonDefinition(buttonDefinition)
+                return;
+            }
+            
             event.currentTarget.innerText = newValue.text;
-
             setButtonDefinition({...buttonDefinition, ...newValue});
         }
     }, [isExisting, openModalAsync]);
@@ -159,7 +166,7 @@ const DragItem = ({buttonDefinition, setButtonDefinition, style, isExisting = fa
     )
 }
 
-const DropCell = ({setButtonDefinition, row, column, children=undefined}) => {
+const DropCell = ({setButtonDefinition, deleteButtonDefinition, row, column, children=undefined}) => {
     const { openModalAsync } = useModal();
 
     const [{canDrop, isOver}, drop] = useDrop(() => ({
@@ -167,7 +174,7 @@ const DropCell = ({setButtonDefinition, row, column, children=undefined}) => {
         drop: (item: ButtonDefinition) => {
             if(item) {
 
-                let newDef = item;
+                let newDef: Partial<ButtonDefinition> = item;
 
                 if(item.id === defaultCustomDef.id || item.id === defaultSinglesDef.id || item.id === defaultDoublesDef.id) {
                     newDef = {
@@ -175,16 +182,21 @@ const DropCell = ({setButtonDefinition, row, column, children=undefined}) => {
                         buttonType: item.buttonType,
                         text: item.text,
                         traps: item.traps,
-                        position: {
-                            row,
-                            column
-                        }
                     }
+                }
+
+                newDef.position = {
+                    row,
+                    column
                 }
 
                 setButtonDefinition(newDef);
                 
                 openModalAsync(modalId, newDef.text, newDef.traps, newDef.buttonType).then((newValue) => {
+                    if(newValue.delete) {
+                        deleteButtonDefinition(newDef);
+                        return;
+                    }
                     setButtonDefinition({...newDef, ...newValue});
                 });
             }
@@ -197,13 +209,13 @@ const DropCell = ({setButtonDefinition, row, column, children=undefined}) => {
     }));
 
     return (
-        <Box ref={drop} sx={classes.dropCell(row, column, isOver, canDrop)}>
+        <Box ref={drop} id={`${row}-${column}`} sx={classes.dropCell(row, column, isOver, canDrop)}>
             {children}
         </Box>
     )
 };
 
-const DropArea = ({buttonDefinitions, setButtonDefinition}: DropAreaProps) => {
+const DropArea = ({buttonDefinitions, setButtonDefinition, deleteButtonDefinition}: DropAreaProps) => {
     const [gridDef, setGridDef] = useState<any[]>([]);
     let columns = 0;
     let rows = 0;
@@ -215,8 +227,8 @@ const DropArea = ({buttonDefinitions, setButtonDefinition}: DropAreaProps) => {
 
     const onDropResize = useCallback((e: any) => {
         const dropSize = e.target.getBoundingClientRect();
-        const columns = Math.floor(dropSize.height / (remoteButtonSize.x + 16));
-        const rows = Math.floor(dropSize.width / (remoteButtonSize.y + 16));
+        const columns = Math.floor(dropSize.width / (remoteButtonSize.x + 16));
+        const rows = Math.floor(dropSize.height / (remoteButtonSize.y + 16));
 
         const grid = [];
         for(let i = 0; i < rows; i++) {
@@ -231,6 +243,12 @@ const DropArea = ({buttonDefinitions, setButtonDefinition}: DropAreaProps) => {
     useEffect(() => {
         const dropArea = document.getElementById("drop-area");
         onDropResize({target: dropArea});
+
+        const windowResizeHandler = () => {
+            onDropResize({target: dropArea})
+        };
+
+        window.addEventListener("resize", windowResizeHandler);
     }, [onDropResize]);
 
     return(
@@ -247,11 +265,11 @@ const DropArea = ({buttonDefinitions, setButtonDefinition}: DropAreaProps) => {
                     if(buttonDef) {
                         return (
                             <Box sx={classes.dragItemCell(def.row, def.column)}>
-                                <DragItem isExisting={true} buttonDefinition={buttonDef} setButtonDefinition={setButtonDefinition}/>
+                                <DragItem isExisting={true} buttonDefinition={buttonDef} setButtonDefinition={setButtonDefinition} deleteButtonDefinition={deleteButtonDefinition}/>
                             </Box>
                         )
                     }
-                    return <DropCell setButtonDefinition={setButtonDefinition} row={def.row} column={def.column}/>
+                    return <DropCell setButtonDefinition={setButtonDefinition} deleteButtonDefinition={deleteButtonDefinition} row={def.row} column={def.column}/>
                 })}
             </Box>
         </>
@@ -286,14 +304,6 @@ const EditRemote = () => {
         });
     }, []);
 
-    /*
-    TODO:
-    Figure out why the button positioning math is wrong
-    Delete button methods - Right click menu? Drag off remote area?
-    Test Remote?
-    Default Remotes - Singles and Doubles
-    */
-
     const setButtonDefinition = useCallback((buttonDefinition: ButtonDefinition) => {
         setButtonDefinitions(defs => {
             const existingDefIndex = defs.findIndex(b => b.id === buttonDefinition.id);
@@ -307,7 +317,20 @@ const EditRemote = () => {
 
             return [...defs];
         });
-    }, [buttonDefinitions])
+    }, [buttonDefinitions]);
+
+    const deleteButtonDefinition = useCallback((buttonDefinition: ButtonDefinition) => {
+        setButtonDefinitions(defs => {
+            const existingDefIndex = defs.findIndex(b => b.id === buttonDefinition.id);
+            if(existingDefIndex > -1) {
+                const newDefs = [...defs];
+                newDefs.splice(existingDefIndex)
+                return newDefs
+            }
+
+            return defs;
+        })
+    }, []);
 
     const close = () => navigate("../");
     const save = async () => {
@@ -342,7 +365,7 @@ const EditRemote = () => {
                 <Button onClick={onReset} sx={classes.resetButton}>Reset Buttons</Button>
                 
                 <DndProvider options={HTML5toTouch}>
-                    <DropArea buttonDefinitions={buttonDefinitions} setButtonDefinition={setButtonDefinition}/>
+                    <DropArea buttonDefinitions={buttonDefinitions} setButtonDefinition={setButtonDefinition} deleteButtonDefinition={deleteButtonDefinition}/>
                 </DndProvider>
             </Box>
             <EditRemoteButtonModal id={modalId} availableTraps={availableTraps}/>

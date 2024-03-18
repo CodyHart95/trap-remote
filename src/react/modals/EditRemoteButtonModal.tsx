@@ -26,8 +26,13 @@ const EditRemoteButtonModal = ({id, availableTraps}: EditRemoteButtonModalProps)
         return true;
     };
 
+    const onDelete = () => {
+        resolve({ delete: true});
+        return true;
+    }
+
     return (
-        <BaseModal id={id} title="Edit Remote Button" primaryAction="Save" onPrimaryAction={onSave} maxWidth="sm" height="300px">
+        <BaseModal id={id} title="Edit Remote Button" primaryAction="Save" onPrimaryAction={onSave} secondaryAction="Delete" onSecondaryAction={onDelete} maxWidth="sm" height="300px">
             <Box display="flex" flexDirection="column" height="100%" justifyContent="center">
                 <TextBox label="Button Text" value={text} onChange={e => setText(e.target.value)} sx={{marginBottom: "48px"}}/>
                 <MultiSelect label="Traps" items={availableTraps} value={traps} onChange={setTraps} maxSelections={maxSelections} displayKey="name"/>
