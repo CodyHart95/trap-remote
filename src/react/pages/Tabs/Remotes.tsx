@@ -4,10 +4,14 @@ import { List, ListItem, Typography, Button } from "@mui/material";
 import classes from "./classes";
 import { useNavigate } from "react-router-dom";
 import EmptyTabBody from "./EmptyTabBody";
+import { useModal } from "../../modals/useModal";
+import TestRemoteModal from "../../modals/TestRemoteModal";
 
+const modalId = "test-remote-modal";
 
 const Home = () => {
     const [remotes, setRemotes] = useState<Remote[]>([]);
+    const { openModal } = useModal();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -53,6 +57,10 @@ const Home = () => {
         interop.invoke(Messages.SaveRemote, newRemote);
     }
 
+    const onTest = (remote) => {
+        openModal(modalId, remote);
+    }
+
     return (
         <>
             {remotes.length === 0 && <EmptyTabBody buttonText="Add Remote" onClick={onAddRemote}/>}
@@ -67,11 +75,13 @@ const Home = () => {
                             <Button onClick={() => onEditRemote(remote.name)}>Edit</Button>
                             <Button onClick={() => onDelete(remote)} color="error">Delete</Button>
                             <Button onClick={() => onDuplicate(remote)}>Duplicate</Button>
+                            <Button onClick={() => onTest(remote)}>Test</Button>
                         </div>
                     </ListItem>
                 ))}
             </List>
             )}
+            <TestRemoteModal id={modalId} />
         </>
     )
 };

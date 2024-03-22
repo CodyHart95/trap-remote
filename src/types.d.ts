@@ -7,9 +7,8 @@ declare const MAIN_WINDOW_VITE_NAME: string;
 
 interface Station {
     number: number;
-    traps: number;
+    remote: Remote;
     course: string;
-    trapIpAddresses: string[];
 }
 
 interface Course {
@@ -44,4 +43,4 @@ interface IdModalProps {
     id: string;
 }
 
-type AnyCallback = (...params: any[]) => void | Promise<void>;
+type AnyCallback = (...params: any[]) => any;

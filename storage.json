@@ -172,5 +172,67 @@
         }
       ]
     }
-  ]
+  ],
+  "courses": {
+    "Ty's House": [
+      {
+        "number": 0,
+        "course": "Ty's House",
+        "remote": {
+          "name": "Post 1",
+          "buttonDefinitions": [
+            {
+              "id": "96584eb6-a25c-4767-9628-ec44d99cfd94",
+              "buttonType": 1,
+              "text": "Trap A",
+              "traps": [
+                {
+                  "name": "Trap A",
+                  "ipAddress": "0.0.0.0"
+                }
+              ],
+              "position": {
+                "row": 3,
+                "column": 2
+              }
+            },
+            {
+              "id": "9bb27dfc-31fb-46fd-aa0c-b20ce2841661",
+              "buttonType": 1,
+              "text": "Trap B",
+              "traps": [
+                {
+                  "name": "Trap B",
+                  "ipAddress": "0.0.0.0"
+                }
+              ],
+              "position": {
+                "row": 3,
+                "column": 4
+              }
+            },
+            {
+              "id": "69ee3019-beb7-4a6e-9b74-965fe6e2cfc0",
+              "buttonType": 2,
+              "text": "True Pair",
+              "traps": [
+                {
+                  "name": "Trap A",
+                  "ipAddress": "0.0.0.0"
+                },
+                {
+                  "name": "Trap B",
+                  "ipAddress": "0.0.0.0"
+                }
+              ],
+              "position": {
+                "row": 6,
+                "column": 3
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
 }

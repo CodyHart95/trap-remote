@@ -1,169 +1,58 @@
-import {useEffect, useMemo, useRef, useState} from "react";
-import { Box, Button, Grid, Paper } from "@mui/material";
+import { Box, Paper } from "@mui/material";
+import RemoteButton, { size as remoteButtonSize } from "../components/RemoteButton";
+import { useEffect, useState } from "react";
 import Messages from "../../ipc/Messages";
-import { ipcMain } from "electron";
-
-interface RemoteProps {
-    station: Station
-}
-
-interface LayoutProps {
-    trapIpAddresses: string[]
-}
-
-interface Indecator {
-    [ipAddress: string]: boolean
-}
 
 const classes = {
-    singlesLayoutContainer: {
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+    mainBox: (gridDef) => {
+        const columnStyle = Array.from({length: gridDef.columns}, () => `${remoteButtonSize.x}px`).join(" ");
+        const rowStyle = Array.from({length: gridDef.rows}, () => `${remoteButtonSize.y}px`).join(" ");
+        return {
+            width: "100%",
+            height: "100%",
+            display: "grid",
+            gap: "16px",
+            gridColumn: "2 / span 2",
+            gridTemplateColumns: columnStyle,
+            gridTemplateRows: rowStyle,
+        }
     },
-    multiContainer: {
-        width: "100%",
-        height: "100%"
-    },
-    multiItem: {
-        alignItems: "center",
-        justifyContent: "center",
-        display: "flex"
-    },
-    indecator: (on: boolean) => ({
-        width: "15px",
-        height: "15px",
-        borderRadius: "50%",
-        margin: "10px",
-        display: "inline-block",
-        backgroundColor: on ? "green" : "red"
+    button: ({row, column}) => ({
+        cursor: "pointer",
+        gridRow: row,
+        gridColumn: column
     })
 }
-
-const pullTrap = async (ipAddresses: string[]) => {
-    const pulls = ipAddresses.map((ipAddress) => {
-        interop.invoke(Messages.FireTrap, ipAddress)
-    });
-
-    await Promise.allSettled(pulls);
-};
-
-const SinglesLayout = ({ trapIpAddresses }: LayoutProps) => {
-    return (
-        <Box sx={classes.singlesLayoutContainer}>
-            <Button variant="contained" onClick={() => pullTrap(trapIpAddresses)}>Pull</Button>
-        </Box>
-    )
+interface RemoteProps {
+    remoteDefinition: Remote;
 }
 
-const DoublesLayout = ({ trapIpAddresses }: LayoutProps) => {
-    return (
-        <Grid container sx={classes.multiContainer}>
-            <Grid item xs={6} sx={classes.multiItem}>
-                <Button variant="contained" onClick={() => pullTrap([trapIpAddresses[0]])}>Trap A</Button>
-            </Grid>
-            <Grid item xs={6} sx={classes.multiItem}>
-                <Button variant="contained" onClick={() => pullTrap([trapIpAddresses[1]])}>Trap B</Button>
-            </Grid>
-            <Grid item xs={12} sx={classes.multiItem}>
-                <Button variant="contained" onClick={() => pullTrap(trapIpAddresses)}>True Pair</Button>
-            </Grid>
-        </Grid>
-    )
-}
-
-const NLayout = ({ trapIpAddresses }: LayoutProps) => {
-    const doubleADown = useRef("");
-
-    const onMouseDown = (ipAddress: string) => {
-        if(doubleADown.current) {
-            pullTrap([doubleADown.current, ipAddress]);
-            return;
-        }
-
-        if(doubleADown.current) {
-            doubleADown.current = ipAddress;
-        }
-    }
-
-    const onMouseUp = (ipAddress: string) => {
-        if(doubleADown.current === ipAddress) {
-            pullTrap([ipAddress]);
-        }
-
-        doubleADown.current = ipAddress;
-    }
-
-    const gridItems = useMemo(() => {
-        return trapIpAddresses.map((ip, i) => (
-            <Grid item xs={6} sx={classes.multiItem}>
-                <Button variant="contained" onMouseDown={() => onMouseDown(ip)} onMouseUp={() => onMouseUp(ip)}>
-                {`Trap ${i < 27 ? String.fromCharCode(i + 65).toUpperCase() : i + 1}`}
-                </Button>
-            </Grid>
-        ));
-    }, [trapIpAddresses]);
-
-
-    return (
-        <Grid container sx={classes.multiContainer}>
-            {gridItems}
-        </Grid>
-    )
-}
-
-const ButtonLayout = ({trapIpAddresses}: LayoutProps) => {
-    if(trapIpAddresses.length === 1) {
-        return <SinglesLayout trapIpAddresses={trapIpAddresses}/>
-    }
-    else if(trapIpAddresses.length == 2) {
-        return <DoublesLayout trapIpAddresses={trapIpAddresses}/>
-    }
-
-    return <NLayout trapIpAddresses={trapIpAddresses}/>
-}
-
-const Indecator = ({ trapIpAddresses }: LayoutProps) => {
-    const [indecators, setIndecators] = useState<Indecator>({});
+const Remote = ({ remoteDefinition }: RemoteProps) => {
+    const [gridDef, setGridDef] = useState<any>({});
 
     useEffect(() => {
+        const container = document.getElementById("remote-container");
+        const rect = container.getBoundingClientRect();
 
-        const statusPromises = trapIpAddresses.map((ipAddress) => interop.invoke(Messages.TrapStatus, ipAddress));
+        const columns = Math.floor(rect.width / (remoteButtonSize.x + 16));
+        const rows = Math.floor(rect.height / (remoteButtonSize.y + 16));
+        setGridDef({columns, rows});
+    }, [remoteDefinition]);
 
-        Promise.all(statusPromises).then((statuses) => {
-            console.log(statuses);
-            statuses.forEach(s => indecators[s.ipAddress] = s.status);
-        });
-
-        setIndecators({...indecators});
-    }, [trapIpAddresses]);
-
-    useEffect(() => {
-        interop.receive(Messages.TrapConnected, (ipAddress) => {
-            setIndecators(i => ({ ...i, [ipAddress]: true }));
-        });
-
-        interop.receive(Messages.TrapDisconnected, (ipAddress) => {
-            setIndecators(i => ({ ...i, [ipAddress]: false }));
-        });
-    })
+    const onButtonClick = async (buttonDefinition: ButtonDefinition) => {
+        const promises = buttonDefinition.traps.map((trap) => interop.invoke(Messages.FireTrap, trap.ipAddress));
+        await Promise.allSettled(promises);
+    };
 
     return (
-        <Box width="100%" display="flex" alignItems="center" justifyContent="end">
+        <Box id="remote-container" component={Paper} sx={classes.mainBox(gridDef)}>
             {
-                Object.values(indecators).map(i => <Box sx={ () => classes.indecator(i) }/>)
+                remoteDefinition.buttonDefinitions.map((definition) => (
+                    <RemoteButton onClick={() => onButtonClick(definition)} sx={classes.button(definition.position)}>
+                        { definition.text }
+                    </RemoteButton>
+                ))
             }
-        </Box>
-    )
-};
-
-const Remote = ({ station }: RemoteProps) => {
-    return (
-        <Box component={Paper} width="100%" height="100%" alignItems="center">
-            <Indecator trapIpAddresses={station.trapIpAddresses}/>
-            <ButtonLayout trapIpAddresses={station.trapIpAddresses}/>
         </Box>
     )
 };

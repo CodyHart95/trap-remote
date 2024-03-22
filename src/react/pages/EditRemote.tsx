@@ -6,7 +6,6 @@ import { DndProvider } from "react-dnd-multi-backend"
 import { HTML5toTouch } from "rdndmb-html5-to-touch"
 import { useModal } from "../modals/useModal";
 import { useDrag, useDrop } from "react-dnd";
-import { calculateButtonPosition } from "../utils/buttonHelpers";
 import { v4 } from "uuid";
 import { useNavigate, useParams } from "react-router-dom";
 import TextBox from "../components/TextBox";

@@ -41,6 +41,15 @@ const loadData = async () => {
     if(existsSync(storagePath)) {
         const dataString = await fs.readFile(storagePath, "utf-8");
         data = JSON.parse(dataString)
+        if(!data.courses) {
+            data.courses = {};
+        }
+        if(!data.traps) {
+            data.traps = []
+        }
+        if(!data.remotes) {
+            data.remotes = []
+        }
         return data;
     }
 

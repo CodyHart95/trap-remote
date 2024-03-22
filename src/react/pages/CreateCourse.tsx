@@ -1,10 +1,9 @@
 import { Box, Button, List, ListItem, Typography } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { contrastColor } from "../theme";
 import EditStationModal from "../modals/EditStationModal";
 import PageHeader from "../components/PageHeader";
 import TextBox from "../components/TextBox";
-import AddStationModal from "../modals/AddStationModal";
 import Messages from "../../ipc/Messages";
 import { useNavigate, useParams } from "react-router-dom";
 import { useModal } from "../modals/useModal";
@@ -29,12 +28,12 @@ const classes = {
 }
 
 const EditModalId = "EditModal";
-const AddModalId = "AddModal";
 
 const EditCourse = () => {
     const { courseName } = useParams();
     const [stations, setStations] = useState<Station[]>([]);
     const [name, setName] = useState<string>(courseName || "");
+    const remotes = useRef<Remote[]>([]);
     const navigate = useNavigate();
     const { openModalAsync } = useModal();
 
@@ -42,18 +41,31 @@ const EditCourse = () => {
         if(courseName) {
             interop.invoke(Messages.LoadStations, courseName).then(setStations);
         }
+
+        interop.invoke(Messages.LoadRemotes).then((r) => {
+            remotes.current = r
+        });
     }, [courseName])
 
     const onAddStation = async () => {
-        const station = await openModalAsync(AddModalId, stations.length, name);
-        stations.push(station);
-        setStations([...stations]);
+        const newStation: Partial<Station> = {
+            number: stations.length,
+            course: name
+        }
+        const station = await openModalAsync(EditModalId, newStation, remotes.current);
+        if(station) {
+            stations.push(station);
+            setStations([...stations]);
+        }
     }
 
     const onEditStation = async (station: Station) => {
-        const updatedStation = await openModalAsync(EditModalId, station);
-        stations[updatedStation.number] = updatedStation;
-        setStations([...stations]);
+        const updatedStation = await openModalAsync(EditModalId, station, remotes.current);
+
+        if(updatedStation) {
+            stations[updatedStation.number] = updatedStation;
+            setStations([...stations]);
+        }
     }
 
     const onSave = async () => {
@@ -85,7 +97,6 @@ const EditCourse = () => {
                 </List>
             }
             <EditStationModal id={EditModalId}/>
-            <AddStationModal id={AddModalId} />
         </Box>
     )
 };
