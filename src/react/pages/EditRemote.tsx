@@ -46,7 +46,7 @@ const classes = {
         const columnStyle = Array.from({length: columns}, () => `${remoteButtonSize.x}px`).join(" ");
         const rowStyle = Array.from({length: rows}, () => `${remoteButtonSize.y}px`).join(" ");
         return {
-            width: "100%",
+            width: "500px",
             display: "grid",
             gap: "16px",
             gridColumn: "2 / span 2",

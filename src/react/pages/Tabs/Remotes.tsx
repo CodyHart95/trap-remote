@@ -66,19 +66,22 @@ const Home = () => {
             {remotes.length === 0 && <EmptyTabBody buttonText="Add Remote" onClick={onAddRemote}/>}
             {remotes.length > 0 && (
                 <List sx={classes.list}>
-                {remotes.map(remote => (
-                    <ListItem key={remote.name} sx={classes.listItem}>
-                        <Typography>
-                            {remote.name}
-                        </Typography>
-                        <div>
-                            <Button onClick={() => onEditRemote(remote.name)}>Edit</Button>
-                            <Button onClick={() => onDelete(remote)} color="error">Delete</Button>
-                            <Button onClick={() => onDuplicate(remote)}>Duplicate</Button>
-                            <Button onClick={() => onTest(remote)}>Test</Button>
-                        </div>
+                    <ListItem>
+                        <Button variant="contained" onClick={onAddRemote}>Add Remote</Button>
                     </ListItem>
-                ))}
+                    {remotes.map(remote => (
+                        <ListItem key={remote.name} sx={classes.listItem}>
+                            <Typography>
+                                {remote.name}
+                            </Typography>
+                            <div>
+                                <Button onClick={() => onEditRemote(remote.name)}>Edit</Button>
+                                <Button onClick={() => onDelete(remote)} color="error">Delete</Button>
+                                <Button onClick={() => onDuplicate(remote)}>Duplicate</Button>
+                                <Button onClick={() => onTest(remote)}>Test</Button>
+                            </div>
+                        </ListItem>
+                    ))}
             </List>
             )}
             <TestRemoteModal id={modalId} />

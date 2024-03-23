@@ -58,8 +58,8 @@ const classes = {
         const columnStyle = Array.from({length: gridDef.columns}, () => `${remoteButtonSize.x}px`).join(" ");
         const rowStyle = Array.from({length: gridDef.rows}, () => `${remoteButtonSize.y}px`).join(" ");
         return {
-            width: "100%",
-            height: "100%",
+            width: "500px%",
+            height: "calc(100% - 20px)",
             display: "grid",
             gap: "16px",
             gridTemplateColumns: columnStyle,

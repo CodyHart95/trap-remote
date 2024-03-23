@@ -59,14 +59,14 @@ const EditTrapModal = ({ id }: IdModalProps) => {
     };
 
     return (
-        <BaseModal id={id} title={title} onPrimaryAction={onSave} primaryAction="Save" secondaryAction="Cancel" maxWidth="lg">
+        <BaseModal id={id} title={title} onPrimaryAction={onSave} primaryAction="Save" secondaryAction="Cancel" maxWidth="sm">
             <TextBox
                 label="Name"
                 value={trap?.name || ""}
                 onChange={e => setTrap({...trap, name: e.target.value})}
                 helpertext={nameError}
                 fullWidth
-                sx={{marginBottom: "16px", marginRight: "200px"}}
+                sx={{marginBottom: "16px"}}
                 disabled={nameEditable}/>
             <TextBox label="IP Address" value={trap.ipAddress} onChange={e => setTrap({...trap, ipAddress: e.target.value})} helpertext={ipError} fullWidth/>
         </BaseModal>

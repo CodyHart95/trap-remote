@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Paper, Typography } from "@mui/material";
 import ShooterNameModal from "../modals/ShooterNameModal";
-import ScoreCard from "../components/ScoreCard";
 import Remote from "../components/Remote";
 import { useNavigate, useParams } from "react-router-dom";
 import Messages from "../../ipc/Messages";
 import { useModal } from "../modals/useModal";
+import SinglesCard from "../components/ScoreCards.tsx/SinglesCard";
 
 const classes = {
     header: {
@@ -40,7 +40,6 @@ const RunCourse = () => {
     const [course, setCourse] = useState<Course>(defaultCourse);
     const [shooters, setShooters] = useState<string[]>([]);
     const [currentStation, setCurrentStation] = useState<Station>({} as Station);
-    const [finalizeScoreCard, setFinalizeScoreCard] = useState(false);
     const courseComplete = useRef(false);
 
     const navigate = useNavigate();
@@ -83,7 +82,6 @@ const RunCourse = () => {
 
     const onComplete = () => {
         console.log("done");
-        setFinalizeScoreCard(true);
         onHome();
     }
 
@@ -100,9 +98,9 @@ const RunCourse = () => {
                 {!courseComplete.current && <Button variant="contained" onClick={onNextStation}>Next Station</Button>}
             </Box>
 
-            <Box display="flex" height="100%">
-                <Box maxWidth={courseComplete ? "100%" : "60%"}>
-                    <ScoreCard course={course} shooters={shooters || []} complete={finalizeScoreCard} />
+            <Box display="flex" height="calc(100% - 40px)">
+                <Box width={courseComplete.current ? "100%" : "60%"} height="calc(100% - 20px)" component={Paper}>
+                    <SinglesCard course={course} shooters={shooters || []} />
                 </Box>
                 {!courseComplete.current && (
                     <Box width="40%" marginLeft="16px">
