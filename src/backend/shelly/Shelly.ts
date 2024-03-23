@@ -28,7 +28,7 @@ export default class Shelly extends EventEmitter {
             // Do we care? We'll keep trying to connect through the heartbeat;
         }
         finally {
-            //this.startHeartbeat();
+            this.startHeartbeat();
         }
     }
 
@@ -67,7 +67,6 @@ export default class Shelly extends EventEmitter {
             this.onInitialConnect();
         }
         catch(err) {
-            console.log(err);
             if(this.connected) {
                 this.emit("disconnected");
                 this.connected = false;

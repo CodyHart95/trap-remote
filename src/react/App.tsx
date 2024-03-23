@@ -14,7 +14,6 @@ const App = () => {
     return (
         <ThemeProvider theme={theme}>
             <ModalProvider>
-                <Box sx={{backgroundColor: offWhite, padding: "8px"}}>
                     <HashRouter>
                         <Routes>
                             <Route path="/" element={<Home/>} />
@@ -25,7 +24,6 @@ const App = () => {
                             <Route path="/remote/:remoteId" element={<EditRemote/>}/>
                         </Routes>
                     </HashRouter>
-                </Box>
             </ModalProvider>
         </ThemeProvider>
     )

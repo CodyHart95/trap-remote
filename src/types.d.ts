@@ -36,7 +36,7 @@ interface ButtonDefinition {
     text: string;
     buttonType: ButtonType;
     position: {row: number, column: number};
-    traps: trap[];
+    traps: Trap[];
 }
 
 interface IdModalProps {

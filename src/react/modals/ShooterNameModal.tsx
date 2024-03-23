@@ -27,10 +27,12 @@ const ShooterNameModal = ({id}: IdModalProps) => {
 
         setCurrentName("");
         resolve(names);
+        return true;
     }
 
     const onSecondaryAction = () => {
         resolve([]);
+        return true;
     }
 
     const onAddShooter = () => {
