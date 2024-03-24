@@ -6,7 +6,15 @@ import { MakerRpm } from '@electron-forge/maker-rpm';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 
 const config: ForgeConfig = {
-  packagerConfig: {},
+  packagerConfig: {
+    ignore: [
+      "^\\/public$",
+      "^\\/src$",
+      "^\\/node_modules$",
+      "^\\/test-server$",
+      "^\\/.vscode"
+    ]
+  },
   rebuildConfig: {},
   makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
   plugins: [
