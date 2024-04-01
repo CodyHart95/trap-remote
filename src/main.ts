@@ -3,6 +3,7 @@ import { initialize as initializeStorage } from "./backend/storage";
 import path from 'path';
 import { initialize as initializeShellyManager } from "./backend/shelly/shellyManager";
 import { createMainWindow } from './backend/mainWindow';
+import isDev from 'electron-is-dev';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -22,12 +23,20 @@ const createWindow = () => {
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools({mode: "detach"});
+  if(isDev) {
+    // Open the DevTools.
+    mainWindow.webContents.openDevTools({mode: "detach"});
+  }
+
+  mainWindow.webContents.on("before-input-event", (event, input) => {
+    if(input.type === "keyDown" && input.key === "d" && input.modifiers.includes("control")) {
+      mainWindow.webContents.openDevTools({ mode: "detach" });
+    }
+  });
 };
 
 // This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
+// initialization and is ready to create browser windows.d
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
 

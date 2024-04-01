@@ -7,16 +7,25 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 
 const config: ForgeConfig = {
   packagerConfig: {
+    asar: true,
+    icon: "./icons/icon",
     ignore: [
-      "^\\/public$",
-      "^\\/src$",
-      "^\\/node_modules$",
       "^\\/test-server$",
       "^\\/.vscode"
     ]
   },
   rebuildConfig: {},
-  makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
+  makers: [
+    new MakerSquirrel({
+      name: "TrapRemote",
+      authors: "Cody Hart",
+      iconUrl: "https://trap-remote.s3.amazonaws.com/icon.ico",
+      setupIcon: "./icons/icon.ico"
+    }), 
+    new MakerZIP({}, ['darwin']), 
+    new MakerRpm({}), 
+    new MakerDeb({})
+  ],
   plugins: [
     new VitePlugin({
       // `build` can specify multiple entry builds, which can be Main process, Preload scripts, Worker process, etc.
