@@ -25,7 +25,7 @@ const Home = () => {
     }
 
     const onDelete = async (trap: Trap) => {
-        const newTraps = await interop.invoke(Messages.DeleteTrap, trap.name);
+        const newTraps = await interop.invoke(Messages.DeleteTrap, trap);
         setTraps(newTraps);
     }
 

@@ -28,8 +28,8 @@ const Home = () => {
         navigate(`/remote/${remoteName}`);
     }
 
-    const onDelete = (remote: Remote) => {
-        interop.invoke(Messages.DeleteRemote, remote.name);
+    const onDelete = async (remote: Remote) => {
+        await interop.invoke(Messages.DeleteRemote, remote.name);
         const index = remotes.findIndex(c => c.name === remote.name);
 
         if(index > -1) {

@@ -13,7 +13,7 @@ interface DataStorage {
     remotes: Remote[];
 }
 
-const storagePath = path.join(app.getAppPath(), "storage.json");
+const storagePath = path.join(app.getPath("appData"), "storage.json");
 
 let data: DataStorage = {
     courses: {}

@@ -11,7 +11,8 @@ const config: ForgeConfig = {
     icon: "./icons/icon",
     ignore: [
       "^\\/test-server$",
-      "^\\/.vscode"
+      "^\\/.vscode",
+      "^\\/storage.json",
     ]
   },
   rebuildConfig: {},
